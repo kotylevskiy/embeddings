@@ -1,0 +1,140 @@
+# ================================
+# TEXT EMBEDDING MODELS
+# Transformers (PyTorch) compatible
+# Tested with transformers==4.52.0 (required for Jina v3 + Qwen3)
+# ================================
+
+
+# -------- JINA AI --------
+# Notes:
+#  - compact multilingual embeddings with strong quality for their size
+#  - optimized for short–medium text (queries, passages)
+
+jinaai/jina-embeddings-v3                 # supported | multilingual | strong-for-size
+jinaai/jina-embeddings-v2-base-en         # supported | English | baseline
+jinaai/jina-embeddings-v2-base-de         # supported | German | baseline
+jinaai/jina-embeddings-v2-base-zh         # supported | Chinese | baseline
+jinaai/jina-embeddings-v2-base-code       # supported | code | baseline-code
+jinaai/jina-code-embeddings-0.5b          # supported | code | good-code
+jinaai/jina-code-embeddings-1.5b          # supported | code | larger, slower
+
+
+# -------- QWEN3 (strong default family) --------
+# Notes:
+#  - best general-purpose family in this list
+#  - quality scales well with size
+
+Qwen/Qwen3-Embedding-0.6B                 # supported | multilingual | strong-default
+
+
+# -------- E5 (classic strong baseline) --------
+# Notes:
+#  - competitive, well-understood behavior
+#  - requires query/document prefixing for best results
+
+intfloat/e5-small-v2                      # supported | multilingual | lightweight-baseline
+intfloat/e5-base-v2                       # supported | multilingual | solid-baseline
+intfloat/e5-large-v2                      # supported | multilingual | strong-baseline
+
+
+# -------- BGE (English-focused quality models) --------
+# Notes:
+#  - very strong English-only embeddings
+#  - widely used in production retrieval systems
+
+BAAI/bge-small-en-v1.5                    # supported | English | fast-baseline
+BAAI/bge-base-en-v1.5                     # supported | English | high-quality
+BAAI/bge-large-en-v1.5                    # supported | English | very-high-quality
+
+
+# -------- NOMIC (long-context oriented) --------
+# Notes:
+#  - tuned for long chunks / fewer chunks in RAG
+#  - slightly weaker for very short queries than Qwen/BGE
+
+nomic-ai/nomic-embed-text-v1              # supported | multilingual | long-doc-optimized
+nomic-ai/nomic-embed-text-v1.5            # supported | multilingual | improved-long-doc
+
+
+# -------- IBM GRANITE (efficient / enterprise) --------
+# Notes:
+#  - prioritizes efficiency and stability over peak quality
+
+ibm-granite/granite-embedding-30m-english          # supported | English | ultra-light
+ibm-granite/granite-embedding-125m-english         # supported | English | lightweight
+ibm-granite/granite-embedding-small-english-r2     # supported | English | improved-light
+ibm-granite/granite-embedding-107m-multilingual    # supported | multilingual | efficient
+ibm-granite/granite-embedding-278m-multilingual    # supported | multilingual | mid-quality
+
+
+# -------- MULTILINGUAL / REGIONAL --------
+# Notes:
+#  - specialized models; use only when language/domain specificity matters
+
+dangvantuan/vietnamese-embedding            # supported | Vietnamese | domain-specialized
+dangvantuan/vietnamese-document-embedding   # supported | Vietnamese | document-level
+dangvantuan/french-document-embedding       # supported | French | document-level
+heydariAI/persian-embeddings                # supported | Persian | regional
+Lajavaness/bilingual-embedding-small        # supported | bilingual | regional
+Lajavaness/bilingual-embedding-base         # supported | bilingual | regional
+Lajavaness/bilingual-embedding-large        # supported | bilingual | regional
+
+
+# -------- SALESFORCE SFR (precision-focused, heavy) --------
+# Notes:
+#  - strong retrieval quality
+#  - expensive; best for high-value search or reranking
+
+Salesforce/SFR-Embedding-Code-400M_R       # supported | code | strong-code
+
+
+# -------- OPENBMB MiniCPM --------
+# Notes:
+#  - balanced quality, smaller footprint than Qwen3
+#  - currently unsupported on CPU; see unsupported section below
+
+
+# -------- NEUML / BIOMEDICAL --------
+# Notes:
+#  - English biomedical domain only
+#  - not suitable for general-purpose text
+
+NeuML/pubmedbert-base-embeddings                   # supported | English biomedical | strong-domain
+NeuML/pubmedbert-base-embeddings-matryoshka        # supported | English biomedical | strong-domain | matryoshka
+NeuML/bioclinical-modernbert-base-embeddings       # supported | English clinical | strong-domain
+
+
+# -------- E-COMMERCE / DOMAIN --------
+# Notes:
+#  - tuned for product/catalog semantics
+#  - currently unsupported on CPU; see unsupported section below
+
+
+# -------- CLASSIC / LIGHTWEIGHT BASELINES --------
+# Notes:
+#  - stable, fast, widely deployed
+#  - lower ceiling than modern large models
+
+sentence-transformers/all-MiniLM-L6-v2      # supported | multilingual | classic-baseline
+avsolatorio/NoInstruct-small-Embedding-v0   # supported | multilingual | classic-baseline
+
+
+# -------- UNSUPPORTED (transformers==4.52.0, CPU) --------
+# Notes:
+#  - timed out models are too large/slow for CPU within 240s
+#  - 500 errors indicate model-specific incompatibility with AutoModel pooling
+
+Qwen/Qwen3-Embedding-4B                     # unsupported | killed on load (CPU OOM)
+Qwen/Qwen3-Embedding-8B                     # unsupported | 
+Salesforce/SFR-Embedding-2_R                # unsupported | killed on load (CPU OOM)
+Salesforce/SFR-Embedding-Mistral            # unsupported | killed on load (CPU OOM)
+Salesforce/SFR-Embedding-Code-2B_R          # unsupported | killed on load (CPU OOM)
+
+Metric-AI/armenian-text-embeddings-1         # unsupported | 500 on load (model incompatible with AutoModel pooling)
+pfnet/plamo-embedding-1b                     # unsupported | 500 on load (model incompatible with AutoModel pooling)
+sbintuitions/sarashina-embedding-v2-1b       # unsupported | 500 on load (model incompatible with AutoModel pooling)
+openbmb/MiniCPM-Embedding-Light             # unsupported | 500 on load (model incompatible with AutoModel pooling)
+openbmb/MiniCPM-Embedding                   # unsupported | 500 on load (model incompatible with AutoModel pooling)
+NeuML/biomedbert-hash-nano-embeddings        # unsupported | 500 on load (model incompatible with AutoModel pooling)
+Marqo/marqo-ecommerce-embeddings-B           # unsupported | 500 on load (model incompatible with AutoModel pooling)
+Marqo/marqo-ecommerce-embeddings-L           # unsupported | 500 on load (model incompatible with AutoModel pooling)
