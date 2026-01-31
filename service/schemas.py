@@ -1,6 +1,6 @@
 from typing import List, Optional, Union, Literal
 
-from pydantic import BaseModel, Field, StrictInt, StrictStr
+from pydantic import BaseModel, Field, StrictInt, StrictStr, field_validator
 
 
 EmbeddingInput = Union[
@@ -14,7 +14,7 @@ EmbeddingInput = Union[
 class EmbeddingRequest(BaseModel):
     input: EmbeddingInput = Field(..., description="Input text(s) or token IDs")
     model: str = Field(..., description="Model ID", min_length=1)
-    encoding_format: Literal["float", "base64"] = Field(
+    encoding_format: Optional[Literal["float", "base64"]] = Field(
         "float",
         description="Return format for embeddings",
     )
@@ -27,6 +27,13 @@ class EmbeddingRequest(BaseModel):
         None,
         description="End-user identifier (passed through)",
     )
+
+    @field_validator("encoding_format", mode="before")
+    @classmethod
+    def _coerce_encoding_format(cls, value):
+        if value in (None, ""):
+            return "float"
+        return value
 
 
 class EmbeddingItem(BaseModel):
