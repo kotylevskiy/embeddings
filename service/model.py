@@ -5,7 +5,7 @@ from functools import lru_cache
 from typing import Optional
 
 import torch
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoModel, AutoTokenizer, BitsAndBytesConfig
 
 from .config import settings
 from .supported_models import resolve_model_id
@@ -50,13 +50,10 @@ def _load_model_bundle(resolved_model_id: str) -> ModelBundle:
         use_fast=True,
         trust_remote_code=True,
     )
-    model = AutoModel.from_pretrained(
+    model = _load_model_with_dtype_fallback(
         resolved_model_id,
         token=token,
-        trust_remote_code=True,
-        torch_dtype="auto",
-        low_cpu_mem_usage=True,
-        **bnb_kwargs,
+        bnb_kwargs=bnb_kwargs,
     )
 
     _ensure_padding_token(tokenizer, model)
@@ -100,6 +97,28 @@ def _ensure_padding_token(tokenizer: AutoTokenizer, model: AutoModel) -> None:
     model.resize_token_embeddings(len(tokenizer))
 
 
+def _load_model_with_dtype_fallback(
+    resolved_model_id: str,
+    token: Optional[str],
+    bnb_kwargs: dict,
+) -> AutoModel:
+    base_kwargs = {
+        "token": token,
+        "trust_remote_code": True,
+        "torch_dtype": "auto",
+        "low_cpu_mem_usage": True,
+        **bnb_kwargs,
+    }
+    try:
+        return AutoModel.from_pretrained(resolved_model_id, **base_kwargs)
+    except AttributeError as exc:
+        if "is_floating_point" not in str(exc):
+            raise
+    # Some transformers versions do not accept torch_dtype='auto'.
+    base_kwargs.pop("torch_dtype", None)
+    return AutoModel.from_pretrained(resolved_model_id, **base_kwargs)
+
+
 def _resolve_bitsandbytes_kwargs() -> dict:
     mode = settings.bitsandbytes
     if mode is None:
@@ -111,7 +130,13 @@ def _resolve_bitsandbytes_kwargs() -> dict:
             "bitsandbytes is not installed. Install it to use EMBEDDINGS_BITSANDBYTES."
         )
     if mode == "8bit":
-        return {"load_in_8bit": True, "device_map": "auto"}
+        return {
+            "quantization_config": BitsAndBytesConfig(load_in_8bit=True),
+            "device_map": "auto",
+        }
     if mode == "4bit":
-        return {"load_in_4bit": True, "device_map": "auto"}
+        return {
+            "quantization_config": BitsAndBytesConfig(load_in_4bit=True),
+            "device_map": "auto",
+        }
     return {}

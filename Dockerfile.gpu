@@ -7,7 +7,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends python3-venv \
+ && apt-get install -y --no-install-recommends \
+    python3-venv \
+    build-essential \
+    git \
+    ninja-build \
  && rm -rf /var/lib/apt/lists/*
 
 RUN python -m venv --system-site-packages $VIRTUAL_ENV
@@ -16,7 +20,16 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip \
+ && pip install --no-cache-dir setuptools wheel psutil \
  && pip install --no-cache-dir -r requirements.txt
+
+# Build flash-attn with constrained parallelism and explicit CUDA arch
+RUN export MAX_JOBS=1 \
+ && export CMAKE_BUILD_PARALLEL_LEVEL=1 \
+ && export NVCC_THREADS=1 \
+ && export TORCH_NVCC_FLAGS="--use_fast_math" \
+ && export TORCH_CUDA_ARCH_LIST="$(python - <<'EOF'\nimport torch\ncc = torch.cuda.get_device_capability(0)\nprint(f\"{cc[0]}.{cc[1]}\")\nEOF\n)" \
+ && pip install -v flash-attn --no-build-isolation --no-cache-dir
 
 COPY . .
 CMD ["sh", "-c", "uvicorn service.main:app --host 0.0.0.0 --port ${EMBEDDINGS_PORT:-11445}"]
