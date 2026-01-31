@@ -1,39 +1,44 @@
 # Embeddings
 
-**Embeddings** is a lightweight FastAPI microservice that mirrors the **OpenAI embeddings endpoint** (`/v1/embeddings`) while running **local Hugging Face text models**. It focuses on **text → embedding (vector)** and keeps everything else out of scope.
+A lightweight, self-hosted embeddings microservice that mirrors the OpenAI **`POST /v1/embeddings`** API — but runs **local Hugging Face** text embedding models.
 
-The service is intentionally minimal: you supply text (or token IDs) and a model ID, and it returns embedding vectors.
+Use it as a drop-in embeddings backend for:
+- semantic search & nearest-neighbor retrieval
+- clustering / grouping
+- duplicate detection
+- offline indexing pipelines
 
-## Use cases
+**Scope:** text → vector only. No reranking, no training, no “compare” endpoints — just fast, predictable embeddings behind a stable API.
 
-Embeddings is a good fit if you need:
+## Features
 
-* a **dedicated text embedding service** for similarity search, clustering, or indexing
-* clean integration with **other backend systems**
-* a **stable, minimal API** you control
+- OpenAI-compatible endpoint: `POST /v1/embeddings`
+- Local inference with Hugging Face models (allowlist via `supported_models.txt`)
+- Input formats: string(s) or token id(s)
+- Output formats: float arrays or base64 (`encoding_format`)
+- Optional dimension truncation (`dimensions`)
+- CPU and GPU Docker builds + docker-compose
+- Deterministic pooling: mean pooling + L2 normalization
 
-Common use cases include:
-- semantic search
-- nearest-neighbor retrieval
-- clustering and grouping of related documents
-- duplicate or near-duplicate detection
-- anomaly or outlier detection
+## Quickstart
 
-## What Embeddings does
+Build:
 
-For each input text, Embeddings returns a **single embedding vector**:
+```bash
+git clone https://github.com/kotylevskiy/embeddings.git
+cd embeddings
+docker compose up -d --build
+```
 
-* generated via **mean pooling** over the model’s token embeddings
-* **L2-normalized**
+Test:
 
-## What Embeddings does *not* do
+```bash
+curl -s http://localhost:11445/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -d '{"model":"jinaai/jina-embeddings-v2-base-en","input":"Hi! This is a test"}'
+```
 
-* No similarity or “compare” endpoints
-* No task-specific heads (classification, re-ranking, etc.)
-* No fine-tuning or training
-* No model-specific pooling logic
-
-Embeddings is a **pure text embedding microservice**.
+The first call can take a while because the service needs to download the model from Hugging Face.
 
 ## OpenAI API compatibility
 

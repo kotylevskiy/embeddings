@@ -26,11 +26,11 @@ RUN pip install --upgrade pip \
 
 # Optional flash-attn install (disabled by default)
 RUN if [ "$INSTALL_FLASH_ATTN" = "1" ]; then \
-      export MAX_JOBS=1 \
-      CMAKE_BUILD_PARALLEL_LEVEL=1 \
-      NVCC_THREADS=1 \
-      TORCH_NVCC_FLAGS="--use_fast_math" \
-      TORCH_CUDA_ARCH_LIST="$(python - <<'EOF'\nimport torch\ncc = torch.cuda.get_device_capability(0)\nprint(f\"{cc[0]}.{cc[1]}\")\nEOF\n)"; \
+      export MAX_JOBS=1; \
+      export CMAKE_BUILD_PARALLEL_LEVEL=1; \
+      export NVCC_THREADS=1; \
+      export TORCH_NVCC_FLAGS="--use_fast_math"; \
+      export TORCH_CUDA_ARCH_LIST="$(python -c 'import torch; cc=torch.cuda.get_device_capability(0); print(\"%d.%d\" % cc)')"; \
       pip install -v flash-attn --no-build-isolation --no-cache-dir; \
     fi
 
